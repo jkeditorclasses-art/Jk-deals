@@ -1,120 +1,274 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="or">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JK Deals Shopping</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JK Deals - Online Shopping</title>
 <style>
-body{font-family:Arial;margin:0;background:#f5f5f5;color:#222}
-header{background:#111;color:white;padding:20px;text-align:center}
-nav{background:#ff9800;padding:12px;text-align:center}
-nav a{color:#111;margin:10px;text-decoration:none;font-weight:bold}
-.hero{padding:35px 15px;text-align:center;background:#ffe0b2}
-button{background:#ff9800;border:0;padding:12px 18px;border-radius:6px;font-weight:bold}
-.products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:15px}
-.card{background:white;padding:12px;text-align:center;border-radius:10px}
-.card img{width:100%;height:130px;object-fit:contain}
-input{padding:12px;margin:6px;max-width:90%;border:1px solid #ccc;border-radius:5px}
-section{padding:15px}
-footer{background:#111;color:white;text-align:center;padding:20px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9;color:#222}
+header{background:#101828;color:white;padding:18px;text-align:center}
+header h1{margin:0;color:#ffd166}
+nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+button{cursor:pointer;border:0;border-radius:7px;padding:11px 15px;background:#ffb703;color:#111;font-weight:bold}
+nav button{background:white}
+.container{max-width:1000px;margin:auto;padding:16px}
+input,textarea{width:100%;padding:12px;margin:7px 0;border:1px solid #ccc;border-radius:7px}
+.panel{background:white;padding:16px;border-radius:10px;margin:15px 0;box-shadow:0 2px 8px #ddd}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.product{background:white;padding:12px;border-radius:10px;text-align:center;box-shadow:0 2px 7px #ddd}
+.product img{width:100%;height:135px;object-fit:contain}
+.price{color:#087443;font-weight:bold}
+.hidden{display:none}
+footer{text-align:center;padding:20px;background:#101828;color:white;margin-top:25px}
 </style>
 </head>
 <body>
 <header>
 <h1>🛍️ JK Deals</h1>
-<p>Your Shopping, Your Deals!</p>
+<p>Your Shopping Destination</p>
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('products')">Products</button>
+<button onclick="show('cart')">🛒 Cart (<span id="count">0</span>)</button>
+<button onclick="show('account')">Login / Signup</button>
+<button onclick="show('tracking')">My Orders</button>
+</nav>
 </header>
 
-<nav>
-<a href="#home">Home</a>
-<a href="#products">Products</a>
-<a href="#login">Login</a>
-<a href="#cart">Cart 🛒</a>
-</nav>
-
-<section class="hero" id="home">
+<div class="container">
+<section id="home" class="panel">
 <h2>Welcome to JK Deals!</h2>
-<p>Shop your favourite products at great prices.</p>
-<button onclick="document.getElementById('products').scrollIntoView()">Shop Now</button>
+<p>ଭଲ ଜିନିଷ କିଣନ୍ତୁ, ସହଜରେ ଅର୍ଡର କରନ୍ତୁ।</p>
+<button onclick="show('products')">Shop Now 🛍️</button>
 </section>
 
-<section id="login">
-<h2>👤 Login / Sign Up</h2>
+<section id="account" class="panel hidden">
+<h2>Login / Create Account</h2>
 <input id="email" type="email" placeholder="Email address">
-<input id="password" type="password" placeholder="Password">
+<input id="password" type="password" placeholder="Password (at least 6 characters)">
+<button onclick="signup()">Sign Up</button>
 <button onclick="login()">Login</button>
-<p id="loginMsg">Login କରିବାକୁ Email ଓ Password ଦିଅ।</p>
+<button onclick="logout()">Logout</button>
+<p id="authMessage"></p>
 </section>
 
-<section id="products">
-<h2>🛒 Products</h2>
-<div class="products" id="productList"></div>
+<section id="products" class="hidden">
+<h2>Our Products</h2>
+<input id="search" placeholder="Search products..." oninput="renderProducts()">
+<div id="productList" class="products"></div>
 </section>
 
-<section id="cart">
-<h2>🛍️ Your Cart</h2>
-<div id="cartItems">Cart is empty.</div>
+<section id="cart" class="panel hidden">
+<h2>🛒 Your Cart</h2>
+<div id="cartList"></div>
 <h3 id="total">Total: ₹0</h3>
 <button onclick="placeOrder()">Place Order</button>
-<p id="orderMsg"></p>
+<p id="orderMessage"></p>
 </section>
 
-<section id="track">
-<h2>📦 Order Tracking</h2>
-<input id="orderId" placeholder="Enter Order ID">
-<button onclick="trackOrder()">Track Order</button>
-<p id="trackMsg"></p>
+<section id="tracking" class="panel hidden">
+<h2>📦 My Orders</h2>
+<div id="ordersList">Login କରି ନିଜର order ଦେଖନ୍ତୁ।</div>
+<button onclick="loadOrders()">Refresh Orders</button>
 </section>
 
-<footer>
-<p>© 2026 JK Deals</p>
-<p>Happy Shopping ❤️</p>
-</footer>
+<section id="admin" class="panel hidden">
+<h2>Admin: Add Product</h2>
+<p>ଏହି section କେବଳ ଅନୁମତିପ୍ରାପ୍ତ admin ପାଇଁ ସୁରକ୍ଷିତ କରିବାକୁ Firebase Rules ଦରକାର।</p>
+<input id="pname" placeholder="Product name">
+<input id="pprice" type="number" placeholder="Price in rupees">
+<input id="pimage" placeholder="Product image URL">
+<textarea id="pdescription" placeholder="Product description"></textarea>
+<button onclick="addProduct()">Add Product</button>
+<p id="adminMessage"></p>
+</section>
+</div>
 
-<script>
-const products=[
-{id:1,name:"T-Shirt",price:299,image:"https://placehold.co/300x200?text=T-Shirt"},
-{id:2,name:"Shoes",price:799,image:"https://placehold.co/300x200?text=Shoes"},
-{id:3,name:"Watch",price:499,image:"https://placehold.co/300x200?text=Watch"},
-{id:4,name:"Headphones",price:599,image:"https://placehold.co/300x200?text=Headphones"}
-];
-let cart=[];
-function showProducts(){
-document.getElementById("productList").innerHTML=products.map(p=>`
-<div class="card">
-<img src="${p.image}" alt="${p.name}">
-<h3>${p.name}</h3>
-<p>₹${p.price}</p>
-<button onclick="addCart(${p.id})">Add to Cart</button>
-</div>`).join("");
+<footer>© 2026 JK Deals | Online Shopping</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {
+ getAuth,onAuthStateChanged,createUserWithEmailAndPassword,
+ signInWithEmailAndPassword,signOut
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+ getFirestore,collection,addDoc,getDocs,query,where,
+ serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyBTXmt27j7WfmGTAZDP4bxaQPXT0cW8YKo",
+ authDomain: "jk-deals-427f0.firebaseapp.com",
+ projectId: "jk-deals-427f0",
+ storageBucket: "jk-deals-427f0.firebasestorage.app",
+ messagingSenderId: "831087614842",
+ appId: "1:831087614842:web:bf95721d93fab622d254c3",
+ measurementId: "G-MYGG0MCBJT"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let user=null;
+let products=[];
+let cart=JSON.parse(localStorage.getItem("jkCart")||"[]");
+
+window.show=(id)=>{
+ document.querySelectorAll(".container > section").forEach(s=>s.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ if(id==="products")renderProducts();
+ if(id==="cart")renderCart();
+ if(id==="tracking")loadOrders();
+};
+
+function message(id,text){document.getElementById(id).textContent=text;}
+
+window.signup=async()=>{
+ try{
+  await createUserWithEmailAndPassword(auth,email.value,password.value);
+  message("authMessage","Account created successfully!");
+ }catch(e){message("authMessage",e.message);}
+};
+
+window.login=async()=>{
+ try{
+  await signInWithEmailAndPassword(auth,email.value,password.value);
+  message("authMessage","Login successful!");
+ }catch(e){message("authMessage",e.message);}
+};
+
+window.logout=async()=>{
+ try{await signOut(auth);message("authMessage","Logged out.");}
+ catch(e){message("authMessage",e.message);}
+};
+
+onAuthStateChanged(auth,async(u)=>{
+ user=u;
+ if(u)message("authMessage","Logged in: "+u.email);
+ await loadProducts();
+});
+
+async function loadProducts(){
+ try{
+  const snap=await getDocs(collection(db,"products"));
+  products=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderProducts();
+ }catch(e){
+  message("orderMessage","Products load ହେଲା ନାହିଁ: "+e.message);
+ }
 }
-function addCart(id){
-let p=products.find(x=>x.id===id);
-cart.push(p);
-showCart();
+
+function safe(text){
+ const el=document.createElement("span");
+ el.textContent=String(text??"");
+ return el.innerHTML;
 }
-function showCart(){
-document.getElementById("cartItems").innerHTML=cart.length?
-cart.map((p,i)=>`${p.name} - ₹${p.price} <button onclick="removeCart(${i})">Remove</button>`).join("<hr>"):"Cart is empty.";
-document.getElementById("total").textContent="Total: ₹"+cart.reduce((s,p)=>s+p.price,0);
+
+window.renderProducts=()=>{
+ const term=(document.getElementById("search")?.value||"").toLowerCase();
+ const list=document.getElementById("productList");
+ list.innerHTML="";
+ products.filter(p=>String(p.name||"").toLowerCase().includes(term)).forEach(p=>{
+  const card=document.createElement("div");
+  card.className="product";
+  const img=document.createElement("img");
+  img.src=p.image||"https://placehold.co/300x200?text=JK+Deals";
+  img.alt=p.name||"Product";
+  img.onerror=()=>{img.src="https://placehold.co/300x200?text=Product"};
+  const title=document.createElement("h3");
+  title.textContent=p.name||"Product";
+  const price=document.createElement("p");
+  price.className="price";
+  price.textContent="₹"+Number(p.price||0);
+  const desc=document.createElement("p");
+  desc.textContent=p.description||"";
+  const btn=document.createElement("button");
+  btn.textContent="Add to Cart";
+  btn.onclick=()=>addToCart(p.id);
+  card.append(img,title,price,desc,btn);
+  list.appendChild(card);
+ });
+ if(!list.children.length)list.textContent="Product ମିଳିଲା ନାହିଁ। Firebase products collection ରେ products ଯୋଡ଼ନ୍ତୁ।";
+};
+
+function addToCart(id){
+ const p=products.find(x=>x.id===id);
+ if(!p)return;
+ const existing=cart.find(x=>x.id===id);
+ if(existing)existing.qty++;
+ else cart.push({id:p.id,name:p.name,price:Number(p.price||0),qty:1});
+ localStorage.setItem("jkCart",JSON.stringify(cart));
+ renderCart();
+ document.getElementById("count").textContent=cart.reduce((n,x)=>n+x.qty,0);
 }
-function removeCart(i){cart.splice(i,1);showCart();}
-function login(){
-document.getElementById("loginMsg").textContent=
-"Demo login only. Firebase Authentication connect କଲେ ପ୍ରକୃତ Login ହେବ।";
-}
-function placeOrder(){
-if(!cart.length){alert("ପ୍ରଥମେ Product Cart ରେ ଯୋଡ଼।");return;}
-let id="JK"+Date.now().toString().slice(-6);
-document.getElementById("orderMsg").textContent="Demo Order ID: "+id;
-document.getElementById("trackMsg").textContent="Order placed (demo).";
-cart=[];showCart();
-}
-function trackOrder(){
-document.getElementById("trackMsg").textContent=
-"ଏହା Demo Tracking। ପ୍ରକୃତ Tracking ପାଇଁ Database ଦରକାର।";
-}
-showProducts();
+
+window.renderCart=()=>{
+ const list=document.getElementById("cartList");
+ list.innerHTML="";
+ let total=0;
+ cart.forEach((p,i)=>{
+  total+=p.price*p.qty;
+  const row=document.createElement("p");
+  row.textContent=`${p.name} — ₹${p.price} × ${p.qty} `;
+  const btn=document.createElement("button");
+  btn.textContent="Remove";
+  btn.onclick=()=>{
+   cart.splice(i,1);
+   localStorage.setItem("jkCart",JSON.stringify(cart));
+   renderCart();
+  };
+  row.appendChild(btn);list.appendChild(row);
+ });
+ document.getElementById("total").textContent="Total: ₹"+total;
+ document.getElementById("count").textContent=cart.reduce((n,x)=>n+x.qty,0);
+};
+
+window.placeOrder=async()=>{
+ if(!user){message("orderMessage","ପ୍ରଥମେ Login କରନ୍ତୁ।");show("account");return;}
+ if(!cart.length){message("orderMessage","Cart ଖାଲି ଅଛି।");return;}
+ try{
+  const total=cart.reduce((n,p)=>n+p.price*p.qty,0);
+  const ref=await addDoc(collection(db,"orders"),{
+   userId:user.uid,
+   items:cart.map(p=>({id:p.id,name:p.name,price:p.price,qty:p.qty})),
+   total:total,
+   status:"Order Placed",
+   createdAt:serverTimestamp()
+  });
+  cart=[];
+  localStorage.setItem("jkCart","[]");
+  renderCart();
+  message("orderMessage","Order placed! Order ID: "+ref.id);
+ }catch(e){message("orderMessage","Order ହୋଇନାହିଁ: "+e.message);}
+};
+
+window.loadOrders=async()=>{
+ if(!user){document.getElementById("ordersList").textContent="ପ୍ରଥମେ Login କରନ୍ତୁ।";return;}
+ try{
+  const q=query(collection(db,"orders"),where("userId","==",user.uid));
+  const snap=await getDocs(q);
+  const list=document.getElementById("ordersList");
+  list.innerHTML="";
+  if(snap.empty){list.textContent="କୌଣସି order ମିଳିଲା ନାହିଁ।";return;}
+  snap.forEach(d=>{
+   const o=d.data();
+   const div=document.createElement("div");
+   div.className="panel";
+   div.textContent=`Order ID: ${d.id} | Total: ₹${o.total} | Status: ${o.status}`;
+   list.appendChild(div);
+  });
+ }catch(e){document.getElementById("ordersList").textContent="Orders load ହେଲା ନାହିଁ: "+e.message;}
+};
+
+window.addProduct=async()=>{
+ if(!user){message("adminMessage","ପ୍ରଥମେ login କରନ୍ତୁ।");return;}
+ message("adminMessage","Admin permission ଓ Firestore Security Rules ସେଟ୍ ହେବା ପରେ ମାତ୍ର product add କରିବା ଉଚିତ।");
+};
+
+renderCart();
 </script>
 </body>
 </html>
