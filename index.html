@@ -33,6 +33,7 @@ footer{text-align:center;padding:20px;background:#101828;color:white;margin-top:
 <button onclick="show('cart')">🛒 Cart (<span id="count">0</span>)</button>
 <button onclick="show('account')">Login / Signup</button>
 <button onclick="show('tracking')">My Orders</button>
+<button id="adminNav" class="hidden" onclick="show('admin')">Admin</button>
 </nav>
 </header>
 
@@ -116,7 +117,13 @@ let user=null;
 let products=[];
 let cart=JSON.parse(localStorage.getItem("jkCart")||"[]");
 
+const ADMIN_UID="QCMIMIHLIWNTjEwQOg0aCq91eJx2";
+
 window.show=(id)=>{
+ if(id==="admin" && (!user || user.uid!==ADMIN_UID)){
+  alert("Admin access denied.");
+  return;
+ }
  document.querySelectorAll(".container > section").forEach(s=>s.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
  if(id==="products")renderProducts();
@@ -147,6 +154,8 @@ window.logout=async()=>{
 
 onAuthStateChanged(auth,async(u)=>{
  user=u;
+ const adminButton=document.getElementById("adminNav");
+ adminButton.classList.toggle("hidden",!u || u.uid!==ADMIN_UID);
  if(u)message("authMessage","Logged in: "+u.email);
  await loadProducts();
 });
@@ -264,8 +273,34 @@ window.loadOrders=async()=>{
 };
 
 window.addProduct=async()=>{
- if(!user){message("adminMessage","ପ୍ରଥମେ login କରନ୍ତୁ।");return;}
- message("adminMessage","Admin permission ଓ Firestore Security Rules ସେଟ୍ ହେବା ପରେ ମାତ୍ର product add କରିବା ଉଚିତ।");
+ if(!user){
+  message("adminMessage","ପ୍ରଥମେ Admin account ରେ login କରନ୍ତୁ।");
+  return;
+ }
+ const name=document.getElementById("pname").value.trim();
+ const price=Number(document.getElementById("pprice").value);
+ const image=document.getElementById("pimage").value.trim();
+ const description=document.getElementById("pdescription").value.trim();
+
+ if(!name || !Number.isFinite(price) || price<=0){
+  message("adminMessage","Product name ଓ ସଠିକ୍ price ଦିଅନ୍ତୁ।");
+  return;
+ }
+
+ try{
+  await addDoc(collection(db,"products"),{
+   name, price, image, description,
+   createdAt:serverTimestamp()
+  });
+  document.getElementById("pname").value="";
+  document.getElementById("pprice").value="";
+  document.getElementById("pimage").value="";
+  document.getElementById("pdescription").value="";
+  await loadProducts();
+  message("adminMessage","Product ସଫଳତାର ସହିତ ଯୋଡ଼ାଗଲା।");
+ }catch(e){
+  message("adminMessage","Product ଯୋଡ଼ା ହେଲା ନାହିଁ: "+e.message);
+ }
 };
 
 renderCart();
