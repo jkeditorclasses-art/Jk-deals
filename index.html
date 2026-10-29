@@ -22,6 +22,8 @@ input,textarea{width:100%;padding:12px;margin:7px 0;border:1px solid #ccc;border
 .hidden{display:none}
 footer{text-align:center;padding:20px;background:#101828;color:white;margin-top:25px}
 </style>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#101828">
 </head>
 <body>
 <header>
@@ -305,5 +307,16 @@ window.addProduct=async()=>{
 
 renderCart();
 </script>
+
+<script>
+// JK Deals Service Worker registration
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch((error) => console.error("Service Worker:", error));
+  });
+}
+</script>
+
 </body>
 </html>
